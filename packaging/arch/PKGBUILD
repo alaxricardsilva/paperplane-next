@@ -1,0 +1,49 @@
+# Maintainer: Alax Ricard <https://github.com/ricardtech>
+# Contributor: Marco Melorio, Marcus Behrendt, Alisson Lauffer
+
+_pkgname=paper-plane
+pkgname=paperplane-next-git
+pkgver=0.1.0beta.5.r1.g861cfa7
+pkgrel=1
+pkgdesc='Cliente Telegram nativo, moderno e ultra-leve para Linux em Rust + GTK4 (Community Revival)'
+arch=('x86_64' 'aarch64')
+url='https://github.com/ricardtech/paperplane-next'
+license=('GPL3')
+depends=(
+  'gtk4'
+  'libadwaita'
+  'libshumate'
+  'rlottie'
+  'telegram-tdlib'
+)
+makedepends=(
+  'git'
+  'meson'
+  'ninja'
+  'rust'
+  'cargo'
+  'blueprint-compiler'
+  'appstream'
+)
+provides=('paper-plane' 'paperplane-next')
+conflicts=('paper-plane' 'paper-plane-git')
+
+source=("git+https://github.com/ricardtech/paperplane-next.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/paperplane-next"
+  git describe --long --tags --abbrev=7 2>/dev/null | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g' || printf "0.1.0.r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  arch-meson paperplane-next build \
+    -Dtg_api_id=22303002 \
+    -Dtg_api_hash=3cc0969992690f032197e6609b296599
+
+  meson compile -C build
+}
+
+package() {
+  DESTDIR="${pkgdir}" meson install -C build
+}
